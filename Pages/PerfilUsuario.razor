@@ -1,2 +1,140 @@
 ﻿@page "/perfilUsuario"
 
+
+<h3>Usuario: @perfil.Nombre</h3>
+
+@if (perfil.GetVuelos().Count == 0)
+{
+	<h2 class="alert-danger"> SIN VUELOS REGISTRADOS</h2>
+}
+else
+{
+
+	<ul style="font-family:'Agency FB'; font-size:large">
+		@foreach (Vuelo vuelo in perfil.GetVuelos())
+		{
+			<li class="list-group-item">
+				<ul class="list-group">
+					<li class="list-group-item">
+
+						<div class="row">
+							<div class="col-sm-2">
+								<img src=@vuelo.UrlImage class="img-fluid" />
+							</div>
+							<div class="col-sm-10">
+								<h5 class="alert-secondary" style="text-align:center;font-size:xx-large;font-weight:500">@vuelo.LugarSalida -->   @vuelo.LugarDestino</h5>
+							</div>
+						</div>
+					</li>
+					<li class="list-group-item">
+						<div class="row">
+							<div class="col-sm-2">
+								<i class="fas fa-plane-departure"></i>
+							</div>
+							<div class="col-sm-10">
+								<h5 class="card-title " style="text-align:center;font-size:x-large">Información de vuelo</h5>
+								<p class="card-text">Fecha Salida: @vuelo.FechaSalida </p>
+								<p class="card-text">
+									Fecha LLegada (Aprox): @vuelo.FechaLlegada
+								</p>
+								<p class="card-text">Acientos Disponibles: @vuelo.AsientoDisponible</p>
+								<p class="card-text">Estado: @vuelo.Estado</p>
+								<p class="card-text">Precio: @vuelo.Precio USD</p>
+							</div>
+						</div>
+					</li>
+					<li class="list-group-item">
+
+						@if (vuelo.Estado == EstadoVuelo.Completado)
+						{
+							<p class="alert-dismissible">Vuelo ya Realizado</p>
+						}
+						else if (vuelo.Estado == EstadoVuelo.Cancelado)
+						{
+							<p class="alert-danger">Vuelo Actualmente Cancelado</p>
+						}
+						else if (vuelo.Estado != EstadoVuelo.Activo)
+						{
+							<p class="alert-danger">Vuelo Actualmente en espera de ser</p>
+						}
+						else
+						{
+							<p class="alert-success">Vuelo Actualmente Activo</p>
+						}
+						<button class="btn btn-outline-warning" @onclick="()=>QuitarBoleto(vuelo)">Eliminar</button>
+					</li>
+				</ul>
+			</li>
+		}
+	</ul>
+
+
+@* 	<ul>
+		@foreach (Vuelo vuelo in perfil.GetVuelos().OrderByDescending(x => x.FechaSalida))
+		{
+			<li class="list-group-item">
+				<ul class="list-group">
+					<li class="list-group-item">
+						<div class="row">
+							<div class="col-sm-2">
+								<img src=@vuelo.UrlImage class="img-fluid" />
+							</div>
+							<div class="col-sm-10">
+								<h5 class="card-title">@vuelo.LugarSalida --  @vuelo.LugarDestino</h5>
+							</div>
+						</div>
+					</li>
+					<li class="list-group-item">
+						<div class="row">
+							<div class="col-sm-2">
+								<i class="fas fa-plane-departure"></i>
+							</div>
+							<div class="col-sm-10">
+								<h5 class="card-title">Información del vuelo</h5>
+								<p class="card-text">Fecha Salida: @vuelo.FechaSalida </p>
+								<p class="card-text">
+									Fecha LLegada (Aprox): @vuelo.FechaLlegada
+								</p>
+								<p class="card-text">Acientos Disponibles: @vuelo.AsientoDisponible</p>
+								<p class="card-text">Estado: @vuelo.Estado</p>
+								<p class="card-text">Precio: @vuelo.Precio USD</p>
+							</div>
+						</div>
+					</li>
+					<li class="list-group-item">
+
+						@if (vuelo.Estado == EstadoVuelo.Completado)
+						{
+							<p class="alert-dismissible">Vuelo ya Realizado</p>
+						}
+						else if (vuelo.Estado == EstadoVuelo.Cancelado)
+						{
+							<p class="alert-danger">Vuelo Actualmente Cancelado</p>
+						}
+						else if (vuelo.Estado != EstadoVuelo.Activo)
+						{
+							<p class="alert-danger">Vuelo Actualmente en espera de ser</p>
+						}
+						else
+						{
+							<p class="alert-success">Vuelo Actualmente Activo</p>
+						}
+						<button class="btn btn-outline-warning" @onclick="()=>QuitarBoleto(vuelo)">Eliminar</button>
+					</li>
+				</ul>
+			</li>
+		}
+	</ul> *@
+
+
+}
+@code {
+	[Parameter]
+	public Perfil perfil { get; set; }
+
+	private void QuitarBoleto(Vuelo vuelo)
+	{
+		perfil.GetVuelos().Remove(vuelo);
+		GestorRegistros.vuelosRegistrados.First(x => x == vuelo).AsientoDisponible += 1;
+	}
+}

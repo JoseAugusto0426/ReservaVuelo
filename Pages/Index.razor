@@ -1,3 +1,129 @@
 ﻿@page "/"
 <PageTitle>Reserva Vuelo</PageTitle>
 
+
+@if (Correct)
+{
+	<MainReservador PerfilActual="@Selected"></MainReservador>
+}
+else if (IsNewUser)
+{
+	<h3 class="alert-dark">Registrarse </h3>
+
+	<EditForm Model="@perfil">
+		<DataAnnotationsValidator />
+
+		<div class="form-group">
+			<label class="input-group-text" for="nombre">Nombre:</label>
+			<InputText id="nombre" class="form-control" @bind-Value="perfil.Nombre" required />
+		</div>
+
+		<div class="form-group">
+			<label class="input-group-text" for="contrasena">Contraseña:</label>
+			<InputText id="contrasena" type="password" class="form-control" @bind-Value="@perfil.Password" required />
+		</div>
+
+		@if (!Usuarios.Any(x => x.Nombre == perfil.Nombre))
+		{
+			<button @onclick=Registrar class="btn btn-outline-success">Registrarse</button>
+		}
+		else
+		{
+			<p class="alert-primary"> Ya existe un registro con dicho nombre</p>
+		}
+	</EditForm>
+}
+@* INICAIR SECCION *@
+else
+{
+	<h2 class="alert-primary mb-6" @* style="text-align:center;color:black;" *@>Iniciar Seccion</h2>
+
+	<div class="container-fluid">
+		<button class="btn-outline-primary" style="justify-items:center" @onclick=ToRegister>Registrarse</button>
+		<hr />
+		<EditForm Model="@UsuarioVerificar">
+			<DataAnnotationsValidator />
+			<div class="mb-3 input-group">
+				<label class="input-group-text alert-primary" for="nombre">Nombre:</label>
+				<select class="form-control" id="username" name="username" @bind="@Selected.Nombre">
+
+					@foreach (var user in Usuarios)
+					{
+						<option value="@user.Nombre">@user.Nombre</option>
+					}
+				</select>
+			</div>
+
+			<div class="mb-3 input-group">
+				<label class="input-group-text" for="contrasena">Contraseña:</label>
+				<InputText id="contrasena" type="password" class="form-control" @bind-Value="@UsuarioVerificar.Password" required />
+			</div>
+
+			<button @onclick="()=>Ingresar()" class="btn btn-outline-success">Ingresar</button>
+
+
+		</EditForm>
+	</div>
+
+}
+
+@code {
+	public bool IsNewUser = !Usuarios.Any();
+	public static List<Perfil> Usuarios = GestorRegistros.perfilesRegistrados.OrderBy(x => x.Nombre).ToList();
+
+	public Perfil perfil = new Perfil("", "");
+
+	public bool Correct { get; set; } = false;
+
+	private void Registrar()
+	{
+		if (!string.IsNullOrEmpty(perfil.Nombre) && !string.IsNullOrEmpty(perfil.Password) && !GestorRegistros.perfilesRegistrados.Any(x => x == perfil))
+		{
+			GestorRegistros.perfilesRegistrados.Add(perfil);
+			IsNewUser = false;
+			UpdateUsers();
+			Correct = false;
+		}
+
+	}
+	private void ToRegister()
+	{
+		IsNewUser = true;
+		UpdateUsers();
+		Correct = false;
+	}
+
+
+	// Iniciar Seccion
+
+	public Perfil UsuarioVerificar = new Perfil("", "");
+	Perfil Selected = new Perfil("", "");
+	// public static List<Perfil> Usuarios = new List<Perfil>();
+	protected override void OnInitialized()
+	{
+		Usuarios = GestorRegistros.perfilesRegistrados.OrderBy(x => x.Nombre).ToList();
+		if (Usuarios.FirstOrDefault() != null && GestorRegistros.vuelosRegistrados.FirstOrDefault() != null)
+		{
+			Usuarios.First().AddVuelo(GestorRegistros.vuelosRegistrados.First());
+		}
+		base.OnInitialized();
+	}
+	private void UpdateUsers()
+	{
+		Usuarios = GestorRegistros.perfilesRegistrados.OrderBy(x => x.Nombre).ToList();
+	}
+	private void Ingresar()
+	{
+		Selected = Usuarios.FirstOrDefault(x => x.Nombre == Selected.Nombre);
+		if (Selected != null && UsuarioVerificar.Password == Selected.Password)
+		{
+			Correct = true;
+		}
+		else
+		{
+			Correct = false;
+		}
+	}
+}
+
+

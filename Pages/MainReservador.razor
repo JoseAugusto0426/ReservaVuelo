@@ -1,1 +1,124 @@
-﻿
+﻿<h3 class="alert-success ">Catalogo Vuelos</h3>
+
+@if (!ToProfile)
+{
+	<button class="btn btn-outline-success " @onclick=GoToProfile>Perfil</button>
+
+	<ul style="font-family:'Agency FB'; font-size:large">
+		@foreach (Vuelo vuelo in vuelos)
+		{
+			<li class="list-group-item">
+				<ul class="list-group">
+					<li class="list-group-item">
+
+						<div class="row">
+							<div class="col-sm-2">
+								<img src=@vuelo.UrlImage class="img-fluid" />
+							</div>
+							<div class="col-sm-10">
+								<h5 class="alert-secondary" style="text-align:center;font-size:xx-large;font-weight:500">@vuelo.LugarSalida -->   @vuelo.LugarDestino</h5>
+							</div>
+						</div>
+					</li>
+					<li class="list-group-item">
+						<div class="row">
+							<div class="col-sm-2">
+								<i class="fas fa-plane-departure"></i>
+							</div>
+							<div class="col-sm-10">
+								<h5 class="card-title " style="text-align:center;font-size:x-large">Información de vuelo</h5>
+								<p class="card-text">Fecha Salida: @vuelo.FechaSalida </p>
+								<p class="card-text">
+									Fecha LLegada (Aprox): @vuelo.FechaLlegada
+								</p>
+								<p class="card-text">Acientos Disponibles: @vuelo.AsientoDisponible</p>
+								<p class="card-text">Estado: @vuelo.Estado</p>
+								<p class="card-text">Precio: @vuelo.Precio USD</p>
+							</div>
+						</div>
+					</li>
+					<li class="list-group-item">
+
+						@if (vuelo.Estado == EstadoVuelo.Completado)
+						{
+							<p class="alert-danger">Vuelo ya Realizado</p>
+						}
+						else if (vuelo.Estado == EstadoVuelo.Cancelado)
+						{
+							<p class="alert-danger">Vuelo Actualmente Cancelado</p>
+						}
+						else if (vuelo.Estado != EstadoVuelo.Activo)
+						{
+							<p class="alert-warning">Vuelo Actualmente En espera de ser procesado</p>
+						}
+						else if (vuelo.Estado == EstadoVuelo.Activo)
+						{
+							if (!VerificaExistencia(vuelo))
+							{
+								if (vuelo.AsientoDisponible == 0)
+								{
+									<p class="alert-dismissible">Vuelo Actualmente LLENO</p>
+								}
+								else
+								{
+									<button class="btn btn-success" @onclick="()=>ComprarBoleto(vuelo)">Comprar</button>
+
+								}
+							}
+							else
+							{
+								<p class="alert-success">Comprado</p>
+								<button class="btn btn-outline-warning" @onclick="()=>QuitarBoleto(vuelo)">Cancelar</button>
+							}
+						}
+						else
+						{
+							<p class="alert-danger">Vuelo Actualmente En proceso</p>
+						}
+					</li>
+				</ul>
+			</li>
+		}
+	</ul>
+
+}
+else
+{
+	<PerfilUsuario perfil="@PerfilActual"></PerfilUsuario>
+}
+
+@code {
+	public bool ToProfile { get; set; } = false;
+	public void GoToProfile()
+	{
+		ToProfile = true;
+	}
+
+	private List<Vuelo> vuelos = GestorRegistros.vuelosRegistrados;
+	[Parameter]
+	public Perfil PerfilActual { get; set; }
+
+	private void ComprarBoleto(Vuelo vuelo)
+	{
+		GestorRegistros.AddTicketToProfile(vuelo, PerfilActual);
+		ActualizaVuelos();
+	}
+	private void QuitarBoleto(Vuelo vuelo)
+	{
+		GestorRegistros.RemoveTicketToProfile(vuelo, PerfilActual);
+		ActualizaVuelos();
+	}
+	private void ActualizaVuelos()
+	{
+		vuelos = GestorRegistros.vuelosRegistrados;
+	}
+
+	private bool VerificaExistencia(Vuelo vuelo)
+	{
+		if (PerfilActual.GetVuelos().Count > 0)
+		{
+			return PerfilActual.GetVuelos().Any(x => x == vuelo);
+		}
+		return false;
+	}
+}

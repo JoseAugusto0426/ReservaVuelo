@@ -1,1 +1,31 @@
 ﻿
+<h3 class="alert-primary">Register</h3>
+
+<EditForm Model="@perfil">
+	<DataAnnotationsValidator />
+
+	<div class="form-group">
+		<label class="input-group-text" for="nombre">Nombre:</label>
+		<InputText id="nombre" class="form-control" @bind-Value="perfil.Nombre" required />
+	</div>
+
+	<div class="form-group">
+		<label class="input-group-text" for="contrasena">Contraseña:</label>
+		<InputText id="contrasena" type="password" class="form-control" @bind-Value="@perfil.Password" required />
+	</div>
+
+	<button @onclick=Registrar class="btn btn-outline-success">Registrarse</button>
+</EditForm>
+
+@code {
+	public Perfil perfil = new Perfil("", "");
+
+	private void Registrar()
+	{
+		if (!string.IsNullOrEmpty(perfil.Nombre) && !string.IsNullOrEmpty(perfil.Password) && GestorRegistros.perfilesRegistrados.Any(x => x == perfil))
+		{
+			GestorRegistros.perfilesRegistrados.Add(perfil);
+		}
+	}
+}
+
